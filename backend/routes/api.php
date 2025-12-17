@@ -23,7 +23,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     });
 
     Route::apiResource('leads', LeadController::class);
-    Route::post('leads/{lead}/status', [LeadController::class, 'updateStatus']); // Kanban move
+    Route::patch('leads/{lead}/status', [LeadController::class, 'updateStatus']); // Kanban move
     Route::get('leads/{lead}/notes', [NoteController::class, 'index']); // Get notes for a lead
     Route::post('leads/{lead}/notes', [NoteController::class, 'store']); // Add note to lead
     Route::delete('notes/{note}', [NoteController::class, 'destroy']); // Delete note

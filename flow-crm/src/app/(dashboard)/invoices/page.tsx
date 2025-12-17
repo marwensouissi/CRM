@@ -3,6 +3,7 @@
 import React from 'react';
 import { Box, Button, Typography, Stack, Chip } from '@mui/material';
 import { Add } from '@mui/icons-material';
+import { useRouter } from 'next/navigation';
 import { GridColDef } from '@mui/x-data-grid';
 import DataTable from '@/components/common/DataTable';
 import PageWrapper from '@/components/common/PageWrapper';
@@ -45,6 +46,7 @@ const columns: GridColDef[] = [
 ];
 
 const InvoicesPage = () => {
+    const router = useRouter();
     const { data: invoices, isLoading } = useQuery({
         queryKey: ['invoices'],
         queryFn: invoiceService.getAll
@@ -56,7 +58,7 @@ const InvoicesPage = () => {
                 <Box>
                     <Typography variant="h4" fontWeight={700}>Invoices</Typography>
                 </Box>
-                <Button variant="contained" startIcon={<Add />}>
+                <Button variant="contained" startIcon={<Add />} onClick={() => router.push('/invoices/new')}>
                     Create Invoice
                 </Button>
             </Stack>

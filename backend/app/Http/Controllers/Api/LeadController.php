@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Lead;
 use Illuminate\Http\Request;
+use App\Enums\LeadStatus;
+use Illuminate\Validation\Rules\Enum;
 
 class LeadController extends Controller
 {
@@ -48,11 +50,18 @@ class LeadController extends Controller
         return response()->json(null, 204);
     }
 
-    // Custom method for Kanban drag-drop
-    public function updateStatus(Request $request, Lead $lead)
+    public function updateStatus(Request $request, $id)
     {
-        $request->validate(['status' => 'required']);
-        $lead->update(['status' => $request->status]);
+        $request->validate([
+            'status' => ['required', new Enum(LeadStatus::class)]
+        ]);
+        
+        // Handle both model binding and direct ID
+        $lead = ($id instanceof \App\Models\Lead) ? $id : \App\Models\Lead::findOrFail($id);
+        
+        $lead->status = $request->input('status');
+        $lead->save();
+        
         \App\Events\DashboardStatsUpdated::dispatch();
         return response()->json($lead);
     }

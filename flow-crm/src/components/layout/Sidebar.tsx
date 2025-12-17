@@ -27,9 +27,11 @@ import {
     Group as TeamIcon,
     Settings as SettingsIcon,
     ChevronLeft as ChevronLeftIcon,
-    Menu as MenuIcon
+    Menu as MenuIcon,
+    LogoutRounded
 } from '@mui/icons-material';
 import { useSidebar } from '@/context/SidebarContext';
+import { useAuth } from '@/context/AuthContext';
 
 const menuItems = [
     { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
@@ -45,6 +47,7 @@ const menuItems = [
 
 const Sidebar = () => {
     const { isOpen, toggleSidebar } = useSidebar();
+    const { user, logout } = useAuth();
     const theme = useTheme();
     const pathname = usePathname();
     const router = useRouter();
@@ -114,7 +117,12 @@ const Sidebar = () => {
 
             {/* Menu Items */}
             <List sx={{ flexGrow: 1, py: 2 }}>
-                {menuItems.map((item) => {
+                {menuItems.filter(item => {
+                    if (item.text === 'Team' || item.text === 'Settings') {
+                        return user?.role === 'ADMIN';
+                    }
+                    return true;
+                }).map((item) => {
                     const isActive = pathname.startsWith(item.path);
                     return (
                         <ListItem key={item.text} disablePadding sx={{ display: 'block', mb: 0.5 }}>
@@ -164,7 +172,49 @@ const Sidebar = () => {
                 })}
             </List>
 
-            {/* User / Footer Area could go here */}
+            {/* Footer / Logout */}
+            <Box sx={{ p: 2 }}>
+                <Tooltip title={!isOpen ? 'Logout' : ''} placement="right">
+                    <ListItemButton
+                        onClick={() => logout()}
+                        sx={{
+                            minHeight: 48,
+                            justifyContent: isOpen ? 'initial' : 'center',
+                            px: 2.5,
+                            borderRadius: 2,
+                            color: theme.palette.error.main,
+                            '&:hover': {
+                                backgroundColor: theme.palette.error.main + '1A', // 10% opacity
+                            },
+                        }}
+                    >
+                        <ListItemIcon
+                            sx={{
+                                minWidth: 0,
+                                mr: isOpen ? 3 : 'auto',
+                                justifyContent: 'center',
+                                color: 'inherit',
+                            }}
+                        >
+                            <LogoutRounded />
+                        </ListItemIcon>
+                        <AnimatePresence>
+                            {isOpen && (
+                                <motion.div
+                                    initial={{ opacity: 0, width: 0 }}
+                                    animate={{ opacity: 1, width: 'auto' }}
+                                    exit={{ opacity: 0, width: 0 }}
+                                >
+                                    <ListItemText
+                                        primary="Logout"
+                                        primaryTypographyProps={{ fontWeight: 600 }}
+                                    />
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </ListItemButton>
+                </Tooltip>
+            </Box>
         </motion.div>
     );
 };

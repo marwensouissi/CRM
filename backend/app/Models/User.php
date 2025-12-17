@@ -50,4 +50,18 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+    public function deals()
+    {
+        return $this->hasMany(Deal::class, 'assigned_to'); // Assuming Deal has assigned_to
+    }
+
+    public function tickets()
+    {
+        return $this->hasMany(Ticket::class, 'assigned_to');
+    }
+
+    public function tasks()
+    {
+        return $this->hasMany(Task::class, 'assigned_to');
+    }
 }

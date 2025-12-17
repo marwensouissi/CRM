@@ -32,60 +32,63 @@ import {
     CheckCircle,
     Note
 } from '@mui/icons-material';
+import { CircularProgress } from '@mui/material';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { leadService } from '@/services/leadService';
 import PageWrapper from '@/components/common/PageWrapper';
 import NotesSection from '@/components/features/leads/NotesSection';
 
-// Mock Lead Data - in real app, fetch via ID
-const mockLead = {
-    id: '1',
-    name: 'John Doe',
-    company: 'TechCorp Inc.',
-    email: 'john.doe@techcorp.com',
-    phone: '+1 (555) 123-4567',
-    value: '$12,000',
-    status: 'Qualified',
-    owner: 'Alice Smith',
-    lastContact: '2 days ago',
-};
-
-const steps = ['New', 'Contacted', 'Qualified', 'Proposal', 'Won/Lost'];
-
-interface TabPanelProps {
-    children?: React.ReactNode;
-    index: number;
-    value: number;
-}
-
-function CustomTabPanel(props: TabPanelProps) {
-    const { children, value, index, ...other } = props;
-    return (
-        <div
-            role="tabpanel"
-            hidden={value !== index}
-            {...other}
-        >
-            {value === index && (
-                <Box sx={{ p: 3 }}>
-                    {children}
-                </Box>
-            )}
-        </div>
-    );
-}
+const steps = [
+    { label: 'New', value: 'NEW' },
+    { label: 'Contacted', value: 'CONTACTED' },
+    { label: 'Qualified', value: 'QUALIFIED' },
+    { label: 'Proposal Sent', value: 'PROPOSAL' },
+    { label: 'Won', value: 'WON' },
+    { label: 'Lost', value: 'LOST' }
+];
 
 const LeadDetailsPage = ({ params }: { params: Promise<{ id: string }> }) => {
-    // Unwrap params using React.use() for Client Components in Next 15/16 if async params passed 
-    // BUT since this is a client component ('use client'), params prop is passed directly typically?
-    // Actually in Next 15, params is a Promise. Even in client components.
-    // If we use 'use client', better to use `use(params)`.
     const { id } = use(params);
+    const queryClient = useQueryClient();
 
     const [tabValue, setTabValue] = React.useState(0);
     const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
         setTabValue(newValue);
     };
 
-    const activeStep = steps.indexOf(mockLead.status);
+    // Fetch lead data
+    const { data: lead, isLoading } = useQuery({
+        queryKey: ['lead', id],
+        queryFn: () => leadService.getById(parseInt(id)),
+    });
+
+    // Update status mutation
+    const updateStatusMutation = useMutation({
+        mutationFn: ({ status }: { status: string }) =>
+            leadService.updateStatus(parseInt(id), status),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['lead', id] });
+            queryClient.invalidateQueries({ queryKey: ['leads'] }); // Refresh kanban too
+        }
+    });
+
+    const handleStatusClick = (newStatus: string) => {
+        updateStatusMutation.mutate({ status: newStatus });
+    };
+
+    if (isLoading) {
+        return (
+            <PageWrapper>
+                <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+                    <CircularProgress />
+                </Box>
+            </PageWrapper>
+        );
+    }
+
+    if (!lead) return null;
+
+    const activeStep = steps.findIndex(s => s.value === lead.status);
 
     return (
         <PageWrapper>
@@ -93,26 +96,31 @@ const LeadDetailsPage = ({ params }: { params: Promise<{ id: string }> }) => {
             <Stack direction="row" justifyContent="space-between" alignItems="center" mb={4}>
                 <Box>
                     <Stack direction="row" spacing={2} alignItems="center">
-                        <Avatar sx={{ width: 56, height: 56, bgcolor: 'primary.main' }}>{mockLead.name.charAt(0)}</Avatar>
+                        <Avatar sx={{ width: 56, height: 56, bgcolor: 'primary.main' }}>{lead.name.charAt(0)}</Avatar>
                         <Box>
-                            <Typography variant="h4" fontWeight={700}>{mockLead.name}</Typography>
-                            <Typography variant="subtitle1" color="text.secondary">{mockLead.company}</Typography>
+                            <Typography variant="h4" fontWeight={700}>{lead.name}</Typography>
+                            <Typography variant="subtitle1" color="text.secondary">{lead.company}</Typography>
                         </Box>
                     </Stack>
                 </Box>
                 <Stack direction="row" spacing={2}>
                     <Button startIcon={<Edit />} variant="outlined">Edit</Button>
                     <Button startIcon={<Delete />} variant="outlined" color="error">Delete</Button>
-                    <Button variant="contained">Convert to Client</Button>
+                    {/* Convert button logic could go here */}
                 </Stack>
             </Stack>
 
             {/* Stages Stepper */}
             <Paper sx={{ mb: 4, p: 3 }}>
-                <Stepper activeStep={activeStep} alternativeLabel>
-                    {steps.map((label) => (
-                        <Step key={label}>
-                            <StepLabel>{label}</StepLabel>
+                <Stepper activeStep={activeStep} alternativeLabel nonLinear>
+                    {steps.map((step) => (
+                        <Step key={step.label}>
+                            <StepLabel
+                                onClick={() => handleStatusClick(step.value)}
+                                sx={{ cursor: 'pointer', '&:hover': { opacity: 0.8 } }}
+                            >
+                                {step.label}
+                            </StepLabel>
                         </Step>
                     ))}
                 </Stepper>
@@ -129,19 +137,19 @@ const LeadDetailsPage = ({ params }: { params: Promise<{ id: string }> }) => {
                         <List>
                             <ListItem>
                                 <ListItemIcon><Email color="action" /></ListItemIcon>
-                                <ListItemText primary="Email" secondary={mockLead.email} />
+                                <ListItemText primary="Email" secondary={lead.email || 'N/A'} />
                             </ListItem>
                             <ListItem>
                                 <ListItemIcon><Phone color="action" /></ListItemIcon>
-                                <ListItemText primary="Phone" secondary={mockLead.phone} />
+                                <ListItemText primary="Phone" secondary={lead.phone || 'N/A'} />
                             </ListItem>
                             <ListItem>
                                 <ListItemIcon><Business color="action" /></ListItemIcon>
-                                <ListItemText primary="Company" secondary={mockLead.company} />
+                                <ListItemText primary="Company" secondary={lead.company} />
                             </ListItem>
                             <ListItem>
                                 <ListItemIcon><CalendarToday color="action" /></ListItemIcon>
-                                <ListItemText primary="Last Contact" secondary={mockLead.lastContact} />
+                                <ListItemText primary="Value" secondary={`$${lead.value}`} />
                             </ListItem>
                         </List>
                     </Paper>

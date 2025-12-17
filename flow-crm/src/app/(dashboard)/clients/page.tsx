@@ -1,8 +1,8 @@
 'use client';
 
 import React from 'react';
-import { Box, Button, Typography, Stack, TextField } from '@mui/material';
-import { Add } from '@mui/icons-material';
+import { Box, Button, Typography, Stack, TextField, IconButton } from '@mui/material';
+import { Add, Visibility } from '@mui/icons-material';
 import { useRouter } from 'next/navigation';
 import { GridColDef } from '@mui/x-data-grid';
 import DataTable from '@/components/common/DataTable';
@@ -10,6 +10,15 @@ import PageWrapper from '@/components/common/PageWrapper';
 
 import { useQuery } from '@tanstack/react-query';
 import { clientService } from '@/services/clientService';
+
+const ActionsCell = ({ id }: { id: string }) => {
+    const router = useRouter();
+    return (
+        <IconButton onClick={() => router.push(`/clients/${id}`)} size="small" color="primary">
+            <Visibility fontSize="small" />
+        </IconButton>
+    );
+};
 
 const columns: GridColDef[] = [
     { field: 'name', headerName: 'Client Name', width: 220 },
@@ -32,8 +41,8 @@ const columns: GridColDef[] = [
         width: 120,
         renderCell: (params) => (
             <Box sx={{
-                color: params.value === 'ACTIVE' ? 'success.main' : 'text.secondary',
-                bgcolor: params.value === 'ACTIVE' ? 'success.light' : 'action.hover',
+                color: params.value === 'ACTIVE' ? 'grey.primary' : 'grey.primary',
+                bgcolor: params.value === 'ACTIVE' ? 'grey.light' : 'grey.light', // Using standard valid colors
                 px: 1,
                 py: 0.5,
                 borderRadius: 1,
@@ -45,6 +54,13 @@ const columns: GridColDef[] = [
             </Box>
         )
     },
+    {
+        field: 'actions',
+        headerName: 'Details',
+        width: 100,
+        sortable: false,
+        renderCell: (params) => <ActionsCell id={params.id as string} />
+    }
 ];
 
 const ClientsPage = () => {

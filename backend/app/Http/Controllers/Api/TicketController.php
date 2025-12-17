@@ -10,7 +10,7 @@ class TicketController extends Controller
 {
     public function index()
     {
-        return Ticket::with(['client', 'assigned_to'])->latest()->get();
+        return Ticket::with(['client', 'assignedUser'])->latest()->get();
     }
 
     public function store(Request $request)
@@ -18,7 +18,9 @@ class TicketController extends Controller
         $validated = $request->validate([
             'subject' => 'required',
             'client_id' => 'required|exists:clients,id',
-            'status' => 'required'
+            'status' => 'required',
+            'priority' => 'nullable|string',
+            'description' => 'nullable|string'
         ]);
 
         $ticket = Ticket::create($validated);
@@ -27,7 +29,7 @@ class TicketController extends Controller
 
     public function show(Ticket $ticket)
     {
-        return $ticket->load(['client', 'assigned_to']);
+        return $ticket->load(['client', 'assignedUser']);
     }
 
     public function update(Request $request, Ticket $ticket)

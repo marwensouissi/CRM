@@ -18,7 +18,10 @@ class TaskController extends Controller
         $validated = $request->validate([
             'title' => 'required',
             'status' => 'required',
-            'due_date' => 'nullable|date'
+            'due_date' => 'nullable|date',
+            'priority' => 'nullable|string',
+            'description' => 'nullable|string',
+            'assigned_to' => 'nullable|exists:users,id'
         ]);
 
         $task = Task::create($validated);

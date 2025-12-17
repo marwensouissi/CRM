@@ -6,9 +6,19 @@ export interface Client {
     email: string;
     phone?: string;
     industry?: string;
+    address?: string;
     status: string;
     avatar?: string;
     total_spent: number;
+    created_at: string;
+    deals?: Deal[];
+}
+
+export interface Deal {
+    id: number;
+    title: string;
+    value: number;
+    status: string;
     created_at: string;
 }
 

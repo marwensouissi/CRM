@@ -43,7 +43,7 @@ export const leadService = {
     },
 
     updateStatus: async (id: number, status: string) => {
-        const response = await api.post<Lead>(`/leads/${id}/status`, { status });
+        const response = await api.patch<Lead>(`/leads/${id}/status`, { status });
         return response.data;
     }
 };

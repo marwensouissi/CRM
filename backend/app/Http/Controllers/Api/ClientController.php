@@ -18,7 +18,12 @@ class ClientController extends Controller
         $validated = $request->validate([
             'name' => 'required',
             'email' => 'required|email|unique:clients',
-            'status' => 'required'
+            'status' => 'required',
+            'phone' => 'nullable|string',
+            'industry' => 'nullable|string',
+            'address' => 'nullable|string',
+            'total_spent' => 'nullable|numeric',
+            'avatar' => 'nullable|string'
         ]);
 
         $client = Client::create($validated);

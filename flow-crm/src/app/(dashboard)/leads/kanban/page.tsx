@@ -51,7 +51,7 @@ const STATUS_MAP: Record<string, string> = {
     'NEW': 'new',
     'CONTACTED': 'contacted',
     'QUALIFIED': 'qualified',
-    'PROPOSAL': 'proposal',
+    'PROPOSAL SENT': 'proposal',
     'WON': 'won',
     'LOST': 'lost'
 };
@@ -60,7 +60,7 @@ const REVERSE_STATUS_MAP: Record<string, string> = {
     'new': 'NEW',
     'contacted': 'CONTACTED',
     'qualified': 'QUALIFIED',
-    'proposal': 'PROPOSAL',
+    'proposal': 'PROPOSAL SENT',
     'won': 'WON',
     'lost': 'LOST'
 };
@@ -182,6 +182,7 @@ const KanBanColumn = ({ col }: { col: ColumnType }) => {
 const KanbanBoard = () => {
     const queryClient = useQueryClient();
     const [activeId, setActiveId] = useState<number | null>(null);
+    const [activeContainerId, setActiveContainerId] = useState<string | null>(null);
     const [activeLead, setActiveLead] = useState<Lead | null>(null);
 
     // Fetch leads from API
@@ -282,6 +283,7 @@ const KanbanBoard = () => {
         const { active } = event;
         setActiveId(active.id as number);
         const containerId = findContainer(active.id);
+        if (containerId) setActiveContainerId(containerId);
         const container = columns.find(c => c.id === containerId);
         const item = container?.items.find(i => i.id === active.id);
         if (item) setActiveLead(item);
@@ -345,13 +347,12 @@ const KanbanBoard = () => {
 
     const handleDragEnd = (event: DragEndEvent) => {
         const { active, over } = event;
-        const activeContainer = findContainer(active.id);
         const overContainer = findContainer(over?.id || '');
 
         if (
-            activeContainer &&
+            activeContainerId &&
             overContainer &&
-            activeContainer !== overContainer
+            activeContainerId !== overContainer
         ) {
             // Update status in backend
             const newStatus = REVERSE_STATUS_MAP[overContainer];
@@ -365,6 +366,7 @@ const KanbanBoard = () => {
 
         setActiveId(null);
         setActiveLead(null);
+        setActiveContainerId(null);
     };
 
     const dropAnimation: DropAnimation = {

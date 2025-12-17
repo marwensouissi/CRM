@@ -19,7 +19,9 @@ class InvoiceController extends Controller
             'invoice_number' => 'required|unique:invoices',
             'client_id' => 'required|exists:clients,id',
             'amount' => 'required|numeric',
-            'issue_date' => 'required|date'
+            'issue_date' => 'required|date',
+            'due_date' => 'nullable|date',
+            'status' => 'required'
         ]);
 
         $invoice = Invoice::create($validated);

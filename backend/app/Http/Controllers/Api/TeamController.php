@@ -11,7 +11,8 @@ class TeamController extends Controller
 {
     public function index()
     {
-        return User::latest()->get();
+        // Return users with counts of their activities
+        return User::withCount(['deals', 'tickets', 'tasks'])->latest()->get();
     }
 
     public function store(Request $request)
@@ -28,9 +29,9 @@ class TeamController extends Controller
         return response()->json($user, 201);
     }
 
-    public function show(User $team) // route model binding usually expects {team} -> id
+    public function show(User $team)
     {
-        return $team;
+        return $team->load(['deals', 'tickets', 'tasks']);
     }
 
     public function update(Request $request, User $team)
