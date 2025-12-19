@@ -26,7 +26,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::patch('leads/{lead}/status', [LeadController::class, 'updateStatus']); // Kanban move
     Route::get('leads/{lead}/notes', [NoteController::class, 'index']); // Get notes for a lead
     Route::post('leads/{lead}/notes', [NoteController::class, 'store']); // Add note to lead
-    Route::delete('notes/{note}', [NoteController::class, 'destroy']); // Delete note
+    Route::delete('notes/{note}', [NoteController::class, 'destroy']); 
 
     Route::apiResource('clients', ClientController::class);
     Route::apiResource('deals', DealController::class);
@@ -35,6 +35,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::apiResource('tickets', TicketController::class);
     Route::apiResource('team', TeamController::class);
 
-    Route::get('/stats', [StatsController::class, 'index']); // Dashboard stats
-    Route::get('/activities', [StatsController::class, 'activities']); // Recent activities
+    Route::get('/stats', [StatsController::class, 'index']); 
+    Route::get('/activities', [StatsController::class, 'activities']); 
 });
